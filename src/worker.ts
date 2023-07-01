@@ -10,6 +10,8 @@
 
 import { HttpProxy } from "./api/HttpProxy";
 import { WebSocketProxy } from "./api/WebSocketProxy";
+import html from "../web/index.html";
+
 
 export interface Env {
 	// Example binding to KV. Learn more at https://developers.cloudflare.com/workers/runtime-apis/kv/
@@ -37,6 +39,8 @@ export default {
 		if(url.pathname==="/WebSocketProxy"){
 			return WebSocketProxy(request);
 		}
-		return new Response('????');
+		return new Response(html,{
+			headers: { 'Content-Type': 'text/html' }
+		});
 	},
 };
