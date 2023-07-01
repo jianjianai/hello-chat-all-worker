@@ -11,7 +11,10 @@ export async function WebSocketProxy(request: Request): Promise<Response> {
     if(!urldata){
         return returnError("没有ProxyData参数");
     }
-    let data;
+    let data:{
+        headers?:any,
+        url?:string
+    };
     try{
         data = JSON.parse(urldata);
     }catch(error){
@@ -21,25 +24,57 @@ export async function WebSocketProxy(request: Request): Promise<Response> {
         return returnError("错误的ProxyData");
     }
     try{
-        let re = await fetch(data.url,{
+        if(!data.url){
+            return returnError("错误的Url"+url);
+        }
+        let requesturl;
+        try{
+             requesturl = new URL(url);
+        }catch(error){
+            return returnError("错误的Url:"+error);
+        }
+
+        if(requesturl.protocol.startsWith('wss')){
+            requesturl.protocol = "https";
+        }else if(requesturl.protocol.startsWith('ws')){
+            requesturl.protocol = "http";
+        }
+    
+        let qH = new Headers(data.headers);
+        headersCopy(request.headers,qH,["Upgrade","Connection","Sec-WebSocket-Key","Sec-WebSocket-Version","Sec-WebSocket-Protocol","Sec-WebSocket-Extensions"]);
+        // console.log("1111")
+        let re = await fetch(requesturl,{
             method:request.method,
             body:request.body,
-            headers:data.headers,
+            headers:qH,
         });
-        let he = new Headers(re.headers);
-        he.set("Access-Control-Allow-Origin","*");
-        let r = new Response(re.body,{
-            headers:he,
-            status:re.status
-        });
-        return r;
+        // console.log("2222")
+        return re;
+
+        // let reH = new Headers(re.headers);
+        // reH.set("Access-Control-Allow-Origin","*");
+        // let r = new Response(re.body,{
+        //     headers:reH,
+        //     status:re.status
+        // });
+        // return r;
     }catch(error){
         return returnError(error+"","error");
     }
 }
 
+function headersCopy(from:Headers,to:Headers,names:Array<string>){
+    for(let h of names){
+        let the = from.get(h);
+        if(the){
+            to.set(h,the);
+        }
+    }
+}
+
 
 function returnError(message:string,type:string = "null"){
+    console.log(type,message)
     let response = new Response(message,{
         headers:{
             "Access-Control-Allow-Origin":"*",

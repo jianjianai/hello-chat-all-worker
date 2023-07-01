@@ -34,10 +34,10 @@ export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
 		let url = new URL(request.url);
 		if(url.pathname==="/HttpProxy"){
-			return HttpProxy(request);
+			return await HttpProxy(request);
 		}
 		if(url.pathname==="/WebSocketProxy"){
-			return WebSocketProxy(request);
+			return await WebSocketProxy(request);
 		}
 		return new Response(html,{
 			headers: { 'Content-Type': 'text/html' }
