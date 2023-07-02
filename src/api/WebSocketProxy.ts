@@ -29,7 +29,7 @@ export async function WebSocketProxy(request: Request): Promise<Response> {
         }
         let requesturl;
         try{
-             requesturl = new URL(url);
+             requesturl = new URL(data.url);
         }catch(error){
             return returnError("错误的Url:"+error);
         }
